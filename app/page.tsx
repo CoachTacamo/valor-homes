@@ -63,7 +63,7 @@ export default function Home() {
             Frequently asked questions
           </h2>
           <p className="mt-6 text-lg/8 text-gray-600">
-            Have questions about VA loan assumptions? We're here to help.
+            Have questions about VA loan assumptions? We&apos;re here to help.
           </p>
         </div>
       </div>
