@@ -1,6 +1,8 @@
 'use client'
 
 import { useState, FormEvent } from 'react'
+import Image from 'next/image'
+import Link from 'next/link'
 import { signIn } from 'aws-amplify/auth'
 import { useRouter } from 'next/navigation'
 
@@ -37,7 +39,7 @@ export default function LoginPage() {
         // Handle other flows (MFA, etc.)
         setError('Additional authentication required. Please contact support.')
       }
-    } catch (err: any) {
+    } catch (err) {
       console.error('Sign-in error:', err)
 
       // Handle specific error types
@@ -60,17 +62,19 @@ export default function LoginPage() {
       <div className="flex flex-1 flex-col justify-center px-4 py-12 sm:px-6 lg:flex-none lg:px-20 xl:px-24">
         <div className="mx-auto w-full max-w-sm lg:w-96">
           <div>
-            <img
+            <Image
               alt="ValorHomes"
               src="https://tailwindcss.com/plus-assets/img/logos/mark.svg?color=indigo&shade=600"
+              width={40}
+              height={40}
               className="h-10 w-auto"
             />
             <h2 className="mt-8 text-2xl/9 font-bold tracking-tight text-gray-900">Sign in to your account</h2>
             <p className="mt-2 text-sm/6 text-gray-500">
               Not a member?{' '}
-              <a href="/signup" className="font-semibold text-indigo-600 hover:text-indigo-500">
+              <Link href="/signup" className="font-semibold text-indigo-600 hover:text-indigo-500">
                 Start a 14 day free trial
-              </a>
+              </Link>
             </p>
           </div>
 
@@ -166,9 +170,9 @@ export default function LoginPage() {
                   </div>
 
                   <div className="text-sm/6">
-                    <a href="/forgot-password" className="font-semibold text-indigo-600 hover:text-indigo-500">
+                    <Link href="/forgot-password" className="font-semibold text-indigo-600 hover:text-indigo-500">
                       Forgot password?
-                    </a>
+                    </Link>
                   </div>
                 </div>
 
@@ -243,10 +247,11 @@ export default function LoginPage() {
         </div>
       </div>
       <div className="relative hidden w-0 flex-1 lg:block">
-        <img
+        <Image
           alt=""
           src="https://images.unsplash.com/photo-1496917756835-20cb06e75b4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=1908&q=80"
-          className="absolute inset-0 size-full object-cover"
+          fill
+          className="object-cover"
         />
       </div>
     </div>

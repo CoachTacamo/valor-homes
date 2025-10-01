@@ -37,7 +37,7 @@ export default function Home() {
               Find VA-backed homes with assumable loans
             </p>
             <p className="mt-6 text-lg/8 text-gray-600">
-              Our platform connects you with homeowners looking to transfer their VA loans. Lock in yesterday's rates today.
+              Our platform connects you with homeowners looking to transfer their VA loans. Lock in yesterday&apos;s rates today.
             </p>
           </div>
         </div>
