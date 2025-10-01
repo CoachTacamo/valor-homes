@@ -42,15 +42,20 @@ export default function LoginPage() {
     } catch (err) {
       console.error('Sign-in error:', err)
 
-      // Handle specific error types
-      if (err.name === 'NotAuthorizedException') {
-        setError('Incorrect email or password. Please try again.')
-      } else if (err.name === 'UserNotConfirmedException') {
-        setError('Please verify your email address before signing in.')
-      } else if (err.name === 'UserNotFoundException') {
-        setError('No account found with this email address.')
+      // Type guard to safely access err.name
+      if (err && typeof err === 'object' && 'name' in err) {
+        const name = (err as { name?: string }).name
+        if (name === 'NotAuthorizedException') {
+          setError('Incorrect email or password. Please try again.')
+        } else if (name === 'UserNotConfirmedException') {
+          setError('Please verify your email address before signing in.')
+        } else if (name === 'UserNotFoundException') {
+          setError('No account found with this email address.')
+        } else {
+          setError('An error occurred during sign-in. Please try again.')
+        }
       } else {
-        setError('An error occurred during sign-in. Please try again.')
+        setError('An unexpected error occurred. Please try again.')
       }
     } finally {
       setIsLoading(false)
