@@ -1,17 +1,56 @@
 import { type ClientSchema, a, defineData } from '@aws-amplify/backend';
 
-/*== STEP 1 ===============================================================
-The section below creates a Todo database table with a "content" field. Try
-adding a new "isDone" field as a boolean. The authorization rule below
-specifies that any unauthenticated user can "create", "read", "update", 
-and "delete" any "Todo" records.
-=========================================================================*/
 const schema = a.schema({
-  Todo: a
+  User: a
     .model({
-      content: a.string(),
+      email: a.string().required(),
+      firstName: a.string().required(),
+      lastName: a.string().required(),
+      phoneNumber: a.string(),
+      profilePhotoUrl: a.string(),
+      listings: a.hasMany('Listing', 'userId'),
     })
-    .authorization((allow) => [allow.guest()]),
+    .authorization((allow) => [
+      allow.owner(),
+      allow.authenticated().to(['read']),
+    ]),
+
+  Listing: a
+    .model({
+      slug: a.string().required(),
+      // Basic Info
+      address: a.string().required(),
+      city: a.string().required(),
+      state: a.string().required(),
+      zipCode: a.string().required(),
+      // Pricing & Size
+      price: a.integer().required(),
+      beds: a.integer().required(),
+      baths: a.float().required(),
+      sqft: a.integer().required(),
+      // Financial Details
+      assumableRate: a.float().required(),
+      loanBalance: a.integer().required(),
+      equity: a.integer().required(),
+      // Additional Details
+      description: a.string(),
+      schoolDistrict: a.string(),
+      hoaFees: a.integer(),
+      amenities: a.string().array(),
+      // Images
+      primaryImageUrl: a.string().required(),
+      imageUrls: a.string().array(),
+      // Metadata
+      listingDate: a.date().required(),
+      status: a.enum(['active', 'pending', 'sold', 'archived']),
+      // Owner relationship
+      userId: a.string().required(),
+      user: a.belongsTo('User', 'userId'),
+    })
+    .authorization((allow) => [
+      allow.authenticated().to(['read']),
+      allow.owner().to(['create', 'update', 'delete']),
+    ]),
 });
 
 export type Schema = ClientSchema<typeof schema>;
@@ -19,7 +58,10 @@ export type Schema = ClientSchema<typeof schema>;
 export const data = defineData({
   schema,
   authorizationModes: {
-    defaultAuthorizationMode: 'identityPool',
+    defaultAuthorizationMode: 'userPool',
+    apiKeyAuthorizationMode: {
+      expiresInDays: 30,
+    },
   },
 });
 

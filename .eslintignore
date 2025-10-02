@@ -1,0 +1,9 @@
+# Amplify generated files
+.amplify/
+
+# Build outputs
+.next/
+out/
+
+# Dependencies
+node_modules/

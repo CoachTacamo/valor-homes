@@ -1,55 +1,19 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { Dialog, DialogPanel, Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react'
+import { Dialog, DialogPanel } from '@headlessui/react'
 import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline'
-import { getCurrentUser, signOut } from 'aws-amplify/auth'
 
-const unauthenticatedNavigation = [
+const navigation = [
   { name: 'Features', href: '#features' },
   { name: 'Pricing', href: '#pricing' },
   { name: 'FAQ', href: '#faq' },
 ]
 
-const authenticatedNavigation = [
-  { name: 'Properties', href: '/properties' },
-  { name: 'Favorites', href: '/favorites' },
-]
-
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
-  const [userEmail, setUserEmail] = useState<string>('')
-
-  useEffect(() => {
-    checkAuthStatus()
-  }, [])
-
-  async function checkAuthStatus() {
-    try {
-      const user = await getCurrentUser()
-      setIsAuthenticated(true)
-      setUserEmail(user.signInDetails?.loginId || '')
-    } catch {
-      setIsAuthenticated(false)
-      setUserEmail('')
-    }
-  }
-
-  async function handleSignOut() {
-    try {
-      await signOut()
-      setIsAuthenticated(false)
-      setUserEmail('')
-      window.location.href = '/'
-    } catch (error) {
-      console.error('Error signing out:', error)
-    }
-  }
-
-  const navigation = isAuthenticated ? authenticatedNavigation : unauthenticatedNavigation
 
   return (
     <header className="absolute inset-x-0 top-0 z-50">
@@ -77,77 +41,22 @@ export default function Header() {
           </button>
         </div>
         <div className="hidden lg:flex lg:gap-x-12">
-          {navigation.map((item) => {
-            // Use Link for internal routes, anchor for hash links
-            if (item.href.startsWith('#')) {
-              return (
-                <a key={item.name} href={item.href} className="text-sm/6 font-semibold text-gray-900">
-                  {item.name}
-                </a>
-              )
-            }
-            return (
-              <Link key={item.name} href={item.href} className="text-sm/6 font-semibold text-gray-900">
-                {item.name}
-              </Link>
-            )
-          })}
+          {navigation.map((item) => (
+            <a key={item.name} href={item.href} className="text-sm/6 font-semibold text-gray-900">
+              {item.name}
+            </a>
+          ))}
         </div>
         <div className="hidden lg:flex lg:flex-1 lg:justify-end lg:gap-x-4 lg:items-center">
-          {!isAuthenticated ? (
-            <>
-              <Link href="/login" className="text-sm/6 font-semibold text-gray-900">
-                Log in <span aria-hidden="true">&rarr;</span>
-              </Link>
-              <Link
-                href="/signup"
-                className="rounded-md bg-indigo-600 px-3.5 py-2 text-sm font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-              >
-                Sign up
-              </Link>
-            </>
-          ) : (
-            <Menu as="div" className="relative">
-              <MenuButton className="flex items-center gap-x-1 text-sm/6 font-semibold text-gray-900">
-                {userEmail || 'Account'}
-                <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                  <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clipRule="evenodd" />
-                </svg>
-              </MenuButton>
-              <MenuItems className="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black/5 focus:outline-none">
-                <MenuItem>
-                  {({ active }) => (
-                    <Link
-                      href="/dashboard"
-                      className={`${active ? 'bg-gray-100' : ''} block px-4 py-2 text-sm text-gray-700`}
-                    >
-                      Dashboard
-                    </Link>
-                  )}
-                </MenuItem>
-                <MenuItem>
-                  {({ active }) => (
-                    <Link
-                      href="/profile"
-                      className={`${active ? 'bg-gray-100' : ''} block px-4 py-2 text-sm text-gray-700`}
-                    >
-                      Profile
-                    </Link>
-                  )}
-                </MenuItem>
-                <MenuItem>
-                  {({ active }) => (
-                    <button
-                      onClick={handleSignOut}
-                      className={`${active ? 'bg-gray-100' : ''} block w-full text-left px-4 py-2 text-sm text-gray-700`}
-                    >
-                      Sign out
-                    </button>
-                  )}
-                </MenuItem>
-              </MenuItems>
-            </Menu>
-          )}
+          <Link href="/login" className="text-sm/6 font-semibold text-gray-900">
+            Log in <span aria-hidden="true">&rarr;</span>
+          </Link>
+          <Link
+            href="/signup"
+            className="rounded-md bg-indigo-600 px-3.5 py-2 text-sm font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+          >
+            Sign up
+          </Link>
         </div>
       </nav>
       <Dialog open={mobileMenuOpen} onClose={setMobileMenuOpen} className="lg:hidden">
@@ -176,74 +85,32 @@ export default function Header() {
           <div className="mt-6 flow-root">
             <div className="-my-6 divide-y divide-gray-500/10">
               <div className="space-y-2 py-6">
-                {navigation.map((item) => {
-                  // Use Link for internal routes, anchor for hash links
-                  if (item.href.startsWith('#')) {
-                    return (
-                      <a
-                        key={item.name}
-                        href={item.href}
-                        className="-mx-3 block rounded-lg px-3 py-2 text-base/7 font-semibold text-gray-900 hover:bg-gray-50"
-                        onClick={() => setMobileMenuOpen(false)}
-                      >
-                        {item.name}
-                      </a>
-                    )
-                  }
-                  return (
-                    <Link
-                      key={item.name}
-                      href={item.href}
-                      className="-mx-3 block rounded-lg px-3 py-2 text-base/7 font-semibold text-gray-900 hover:bg-gray-50"
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      {item.name}
-                    </Link>
-                  )
-                })}
+                {navigation.map((item) => (
+                  <a
+                    key={item.name}
+                    href={item.href}
+                    className="-mx-3 block rounded-lg px-3 py-2 text-base/7 font-semibold text-gray-900 hover:bg-gray-50"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    {item.name}
+                  </a>
+                ))}
               </div>
-              <div className="py-6">
-                {!isAuthenticated ? (
-                  <div className="space-y-2">
-                    <Link
-                      href="/login"
-                      className="-mx-3 block rounded-lg px-3 py-2.5 text-base/7 font-semibold text-gray-900 hover:bg-gray-50"
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      Log in
-                    </Link>
-                    <Link
-                      href="/signup"
-                      className="-mx-3 block rounded-lg px-3 py-2.5 text-base/7 font-semibold text-white bg-indigo-600 hover:bg-indigo-500"
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      Sign up
-                    </Link>
-                  </div>
-                ) : (
-                  <div className="space-y-2">
-                    <Link
-                      href="/dashboard"
-                      className="-mx-3 block rounded-lg px-3 py-2.5 text-base/7 font-semibold text-gray-900 hover:bg-gray-50"
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      Dashboard
-                    </Link>
-                    <Link
-                      href="/profile"
-                      className="-mx-3 block rounded-lg px-3 py-2.5 text-base/7 font-semibold text-gray-900 hover:bg-gray-50"
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      Profile
-                    </Link>
-                    <button
-                      onClick={handleSignOut}
-                      className="-mx-3 block w-full text-left rounded-lg px-3 py-2.5 text-base/7 font-semibold text-gray-900 hover:bg-gray-50"
-                    >
-                      Sign out
-                    </button>
-                  </div>
-                )}
+              <div className="py-6 space-y-2">
+                <Link
+                  href="/login"
+                  className="-mx-3 block rounded-lg px-3 py-2.5 text-base/7 font-semibold text-gray-900 hover:bg-gray-50"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Log in
+                </Link>
+                <Link
+                  href="/signup"
+                  className="-mx-3 block rounded-lg px-3 py-2.5 text-base/7 font-semibold text-white bg-indigo-600 hover:bg-indigo-500"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Sign up
+                </Link>
               </div>
             </div>
           </div>
