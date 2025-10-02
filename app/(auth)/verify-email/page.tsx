@@ -1,11 +1,11 @@
 'use client'
 
-import { useState, FormEvent, useEffect } from 'react'
+import { useState, FormEvent, useEffect, Suspense } from 'react'
 import Image from 'next/image'
 import { confirmSignUp, signIn, resendSignUpCode } from 'aws-amplify/auth'
 import { useRouter, useSearchParams } from 'next/navigation'
 
-export default function VerifyEmailPage() {
+function VerifyEmailContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const email = searchParams.get('email') || ''
@@ -183,5 +183,19 @@ export default function VerifyEmailPage() {
         />
       </div>
     </div>
+  )
+}
+
+export default function VerifyEmailPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex min-h-full items-center justify-center">
+        <div className="text-center">
+          <p className="text-gray-500">Loading...</p>
+        </div>
+      </div>
+    }>
+      <VerifyEmailContent />
+    </Suspense>
   )
 }
