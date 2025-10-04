@@ -1,28 +1,33 @@
 import Link from 'next/link'
 import Image from 'next/image'
-import { MapPinIcon } from '@heroicons/react/24/outline'
+import { MapPinIcon, UserCircleIcon } from '@heroicons/react/24/outline'
 import { Listing } from './ListingsList'
+import { calculateMonthlyPayment, calculateMonthlySavings, getCurrentMarketRate } from '@/utils/mortgage'
 
 interface ListingItemProps {
   listing: Listing
 }
 
-// Helper function to calculate monthly mortgage payment
-function calculateMonthlyPayment(principal: number, annualRate: number, years: number = 30): number {
-  const monthlyRate = annualRate / 100 / 12;
-  const numPayments = years * 12;
-  return (principal * monthlyRate * Math.pow(1 + monthlyRate, numPayments)) /
-         (Math.pow(1 + monthlyRate, numPayments) - 1);
-}
-
 export default function ListingItem({ listing }: ListingItemProps) {
-  const currentMarketRate = 7.0; // Mock current market rate
-  const marketPayment = calculateMonthlyPayment(listing.loanBalance || 0, currentMarketRate);
-  const assumablePayment = calculateMonthlyPayment(listing.loanBalance || 0, listing.assumableRate || 0);
-  const monthlySavings = marketPayment - assumablePayment;
+  const currentMarketRate = getCurrentMarketRate()
+  const marketPayment = calculateMonthlyPayment(listing.loanBalance || 0, currentMarketRate)
+  const assumablePayment = calculateMonthlyPayment(listing.loanBalance || 0, listing.assumableRate || 0)
+  const monthlySavings = calculateMonthlySavings(listing.loanBalance || 0, listing.assumableRate || 0)
 
   return (
-    <li className=''>
+    <li className='relative'>
+      {/* Seller Info - Positioned absolutely in top-right, outside the main link */}
+      <div className="absolute top-8 right-8 z-10">
+        <Link
+          href={`/profile/${listing.userId}`}
+          onClick={(e) => e.stopPropagation()}
+          className="flex items-center gap-1.5 px-2 py-1 text-xs text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-colors"
+        >
+          <UserCircleIcon className="size-4" />
+          <span>View Seller</span>
+        </Link>
+      </div>
+
       <Link
         href={`/listings/${listing.slug || listing.id}`}
         className="block hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"

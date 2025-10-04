@@ -76,22 +76,42 @@ When modifying backend resources:
 
 ### Project Structure
 
-- `app/(auth)/` - Authentication routes (login, signup)
-- `app/(marketing)/` - Public marketing pages
+- `app/(auth)/` - Authentication routes
+  - `login/page.tsx` - Login page
+  - `signup/page.tsx` - Signup page
+  - `verify-email/page.tsx` - Email verification with code input
 - `app/(app)/` - Authenticated app routes
   - `app/(app)/layout.tsx` - App layout with auth guard
-  - `app/(app)/components/` - Shared components (Header, Menu)
+  - `app/(app)/components/` - Shared components
+    - `Header.tsx` - Main navigation header
+    - `Menu.tsx` - User dropdown menu
+    - `UserProfileInitializer.tsx` - Auto-creates User record on first login
   - `app/(app)/listings/` - Listings pages
     - `page.tsx` - Listings list page
+    - `loading.tsx` - Loading state for listings
     - `ListingsList.tsx` - Client component fetching listings
     - `ListingItem.tsx` - Individual listing card
     - `[slug]/page.tsx` - Listing detail page
-  - `app/(app)/favorites/` - User favorites
-  - `app/(app)/dashboard/` - User dashboard
+    - `[slug]/ListingDetail.tsx` - Listing detail component with mortgage comparison
+    - `[slug]/loading.tsx` - Loading state for detail page
+    - `[slug]/error.tsx` - Error boundary for detail page
+    - `[slug]/not-found.tsx` - 404 page for missing listings
+  - `app/(app)/profile/` - User profile pages
+    - `page.tsx` - User's own profile view
+    - `loading.tsx` - Loading state for profile
+    - `ProfileView.tsx` - Profile display component
+    - `edit/page.tsx` - Profile editing page
+    - `edit/ProfileEditForm.tsx` - Form component with photo upload
+    - `edit/loading.tsx` - Loading state for edit page
+    - `[userId]/page.tsx` - Public profile view (for contacting sellers)
+    - `[userId]/PublicProfileView.tsx` - Public profile component
+  - `app/(app)/favorites/` - User favorites (placeholder)
   - `app/(app)/seed-data/` - Database seeding page (dev only)
-- `app/components/` - Global components (AuthProvider, ConfigureAmplifyClientSide)
+- `app/components/` - Global components (ConfigureAmplifyClientSide)
 - `scripts/` - Utility scripts (seed-listings.ts, seed-simple.ts)
-- `utils/` - Utility functions (amplify-server-utils.ts)
+- `utils/` - Utility functions
+  - `amplify-server-utils.ts` - Server-side Amplify helpers
+  - `mortgage.ts` - Mortgage calculation utilities (monthly payment, savings, equity)
 
 ## AWS Configuration
 
@@ -124,7 +144,19 @@ Alternative: Run `npm run seed` (requires browser session)
 - **Listing Details**: Full property information including:
   - Financial breakdown (loan balance, equity required, assumable rate)
   - Monthly payment comparison (market rate vs VA rate)
+  - Monthly savings calculator showing cost difference
   - Property details (beds, baths, sqft, amenities, school district, HOA)
   - Multiple property images
+  - Contact seller link to public profile
+- **User Profiles**:
+  - Auto-initialization: UserProfileInitializer creates User record on first login
+  - Profile management: View/edit name, phone, profile photo
+  - Photo upload: S3 storage via `profiles/{entity_id}/*` path
+  - Public profiles: Other users can view seller profiles to make contact
+  - Active listings count displayed on profile
 - **User Ownership**: Users can only edit/delete their own listings
 - **Filter/Search**: Price, listing age, and state filters (UI implemented)
+- **Mortgage Calculations**: Utilities for payment/savings calculations (utils/mortgage.ts)
+- **Loading States**: Skeleton screens and loading indicators throughout app
+- **Error Handling**: Error boundaries and not-found pages for better UX
+- When escaping characters, always use context7 to ensure that the best and most semantic use is followed and would pass linting rules when tested

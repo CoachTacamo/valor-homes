@@ -1,206 +1,62 @@
-'use client';
+import { generateServerClientUsingCookies } from '@aws-amplify/adapter-nextjs/data'
+import type { Schema } from '@/amplify/data/resource'
+import { cookies } from 'next/headers'
+import config from '@/amplify_outputs.json'
+import ListingDetail from './ListingDetail'
+import { notFound } from 'next/navigation'
 
-import { useEffect, useState } from 'react';
-import { generateClient } from 'aws-amplify/data';
-import type { Schema } from '@/amplify/data/resource';
-import Image from 'next/image';
-import { MapPinIcon } from '@heroicons/react/24/outline';
+const client = generateServerClientUsingCookies<Schema>({
+  config,
+  cookies,
+})
 
-const client = generateClient<Schema>();
-type Listing = Schema['Listing']['type'];
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params
 
-export default function ListingPage({
+  const { data: listings } = await client.models.Listing.list({
+    filter: {
+      slug: { eq: slug }
+    }
+  })
+
+  const listing = listings?.[0]
+
+  if (!listing) {
+    return {
+      title: 'Listing Not Found | ValorHomes',
+    }
+  }
+
+  return {
+    title: `${listing.address} - ${listing.city}, ${listing.state} | ValorHomes`,
+    description: `${listing.beds} bed, ${listing.baths} bath home in ${listing.city}, ${listing.state}. VA loan assumable at ${listing.assumableRate}%. ${listing.description?.substring(0, 150)}`,
+  }
+}
+
+export default async function ListingPage({
   params,
 }: {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ slug: string }>
 }) {
-  const [slug, setSlug] = useState<string>('');
-  const [listing, setListing] = useState<Listing | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { slug } = await params
 
-  useEffect(() => {
-    params.then(p => setSlug(p.slug));
-  }, [params]);
-
-  useEffect(() => {
-    if (!slug) return;
-
-    async function fetchListing() {
-      try {
-        const { data: listings, errors } = await client.models.Listing.list({
-          filter: {
-            slug: { eq: slug }
-          }
-        });
-
-        if (errors) {
-          setError(errors[0]?.message || 'Failed to load listing');
-        } else if (!listings || listings.length === 0) {
-          setError('Listing not found');
-        } else {
-          setListing(listings[0]);
-        }
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load listing');
-      } finally {
-        setLoading(false);
-      }
+  const { data: listings, errors } = await client.models.Listing.list({
+    filter: {
+      slug: { eq: slug }
     }
+  })
 
-    fetchListing();
-  }, [slug]);
-
-  if (loading) {
-    return (
-      <main className="dark:text-gray-900">
-        <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8 dark:text-gray-900">
-          <div className="text-center py-12">
-            <p className="text-gray-500 dark:text-gray-400">Loading listing...</p>
-          </div>
-        </div>
-      </main>
-    );
+  if (errors || !listings || listings.length === 0) {
+    notFound()
   }
 
-  if (error || !listing) {
-    return (
-      <main className="dark:text-gray-900">
-        <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8 dark:text-gray-900">
-          <div className="text-center py-12">
-            <p className="text-red-500 dark:text-red-400">{error || 'Listing not found'}</p>
-          </div>
-        </div>
-      </main>
-    );
-  }
+  const listing = listings[0]
 
   return (
     <main className="dark:text-gray-900">
       <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8 dark:text-gray-900">
-
-        {/* Hero Image */}
-        <div className="relative h-96 w-full overflow-hidden rounded-lg">
-          <Image
-            src={listing.primaryImageUrl || '/placeholder-house.jpg'}
-            alt={listing.address || 'Property'}
-            fill
-            className="object-cover"
-          />
-        </div>
-
-        {/* Property Header */}
-        <div className="mt-6 flex items-start justify-between">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">
-              {listing.address}
-            </h1>
-            <div className="mt-2 flex items-center gap-x-2 text-gray-500 dark:text-gray-400">
-              <MapPinIcon className="h-5 w-5" />
-              <p>{listing.city}, {listing.state} {listing.zipCode}</p>
-            </div>
-          </div>
-          <div className="text-right">
-            <p className="text-3xl font-bold text-gray-900 dark:text-white">
-              ${listing.price?.toLocaleString()}
-            </p>
-            <span className="mt-2 inline-block rounded-md bg-green-50 px-3 py-1 text-sm font-medium text-green-700 ring-1 ring-inset ring-green-600/20 dark:bg-green-500/10 dark:text-green-400 dark:ring-green-500/20">
-              {listing.assumableRate}% VA Loan
-            </span>
-          </div>
-        </div>
-
-        {/* Property Stats */}
-        <div className="mt-6 grid grid-cols-3 gap-4">
-          <div className="rounded-lg bg-gray-50 dark:bg-gray-800 p-4">
-            <p className="text-sm text-gray-500 dark:text-gray-400">Bedrooms</p>
-            <p className="mt-1 text-2xl font-semibold text-gray-900 dark:text-white">{listing.beds}</p>
-          </div>
-          <div className="rounded-lg bg-gray-50 dark:bg-gray-800 p-4">
-            <p className="text-sm text-gray-500 dark:text-gray-400">Bathrooms</p>
-            <p className="mt-1 text-2xl font-semibold text-gray-900 dark:text-white">{listing.baths}</p>
-          </div>
-          <div className="rounded-lg bg-gray-50 dark:bg-gray-800 p-4">
-            <p className="text-sm text-gray-500 dark:text-gray-400">Square Feet</p>
-            <p className="mt-1 text-2xl font-semibold text-gray-900 dark:text-white">{listing.sqft?.toLocaleString()}</p>
-          </div>
-        </div>
-
-        {/* Description */}
-        {listing.description && (
-          <div className="mt-6 bg-white dark:bg-gray-800 shadow sm:rounded-lg p-6">
-            <h2 className="text-lg font-medium text-gray-900 dark:text-white">About This Property</h2>
-            <p className="mt-4 text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{listing.description}</p>
-          </div>
-        )}
-
-        {/* Financial Details */}
-        <div className="mt-6 bg-white dark:bg-gray-800 shadow sm:rounded-lg p-6">
-          <h2 className="text-lg font-medium text-gray-900 dark:text-white">Financial Details</h2>
-          <dl className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <div>
-              <dt className="text-sm text-gray-500 dark:text-gray-400">VA Loan Balance</dt>
-              <dd className="mt-1 text-lg font-semibold text-gray-900 dark:text-white">
-                ${listing.loanBalance?.toLocaleString()}
-              </dd>
-            </div>
-            <div>
-              <dt className="text-sm text-gray-500 dark:text-gray-400">Required Equity</dt>
-              <dd className="mt-1 text-lg font-semibold text-gray-900 dark:text-white">
-                ${listing.equity?.toLocaleString()}
-              </dd>
-            </div>
-            <div>
-              <dt className="text-sm text-gray-500 dark:text-gray-400">Assumable Rate</dt>
-              <dd className="mt-1 text-lg font-semibold text-green-700 dark:text-green-400">
-                {listing.assumableRate}%
-              </dd>
-            </div>
-            <div>
-              <dt className="text-sm text-gray-500 dark:text-gray-400">Total Price</dt>
-              <dd className="mt-1 text-lg font-semibold text-gray-900 dark:text-white">
-                ${listing.price?.toLocaleString()}
-              </dd>
-            </div>
-          </dl>
-        </div>
-
-        {/* Additional Details */}
-        {(listing.schoolDistrict || listing.hoaFees || (listing.amenities && listing.amenities.length > 0)) && (
-          <div className="mt-6 bg-white dark:bg-gray-800 shadow sm:rounded-lg p-6">
-            <h2 className="text-lg font-medium text-gray-900 dark:text-white">Additional Details</h2>
-            <dl className="mt-4 space-y-4">
-              {listing.schoolDistrict && (
-                <div>
-                  <dt className="text-sm text-gray-500 dark:text-gray-400">School District</dt>
-                  <dd className="mt-1 text-gray-900 dark:text-white">{listing.schoolDistrict}</dd>
-                </div>
-              )}
-              {listing.hoaFees && (
-                <div>
-                  <dt className="text-sm text-gray-500 dark:text-gray-400">HOA Fees</dt>
-                  <dd className="mt-1 text-gray-900 dark:text-white">${listing.hoaFees}/month</dd>
-                </div>
-              )}
-              {listing.amenities && listing.amenities.length > 0 && (
-                <div>
-                  <dt className="text-sm text-gray-500 dark:text-gray-400">Amenities</dt>
-                  <dd className="mt-2 flex flex-wrap gap-2">
-                    {listing.amenities.map((amenity, index) => (
-                      <span
-                        key={index}
-                        className="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-700/10 dark:bg-blue-400/10 dark:text-blue-400 dark:ring-blue-400/30"
-                      >
-                        {amenity}
-                      </span>
-                    ))}
-                  </dd>
-                </div>
-              )}
-            </dl>
-          </div>
-        )}
+        <ListingDetail listing={listing} />
       </div>
     </main>
-  );
+  )
 }

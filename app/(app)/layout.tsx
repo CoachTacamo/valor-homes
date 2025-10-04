@@ -5,6 +5,7 @@ import { useRouter, usePathname } from 'next/navigation'
 import { getCurrentUser, signOut } from 'aws-amplify/auth'
 import Menu from './components/Menu'
 import Header from './components/Header'
+import UserProfileInitializer from './components/UserProfileInitializer'
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter()
@@ -52,6 +53,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <div className='min-h-full'>
+      <UserProfileInitializer />
       <Menu user={user} pathname={pathname} onSignOut={handleSignOut} />
       <Header pathname={pathname} />
       <main>

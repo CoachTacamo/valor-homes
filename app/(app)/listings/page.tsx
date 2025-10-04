@@ -1,5 +1,31 @@
-import { ChevronDownIcon } from "@heroicons/react/24/outline";
-import ListingsList from "./ListingsList";
+import { Suspense } from 'react'
+import { ChevronDownIcon } from "@heroicons/react/24/outline"
+import ListingsList from "./ListingsList"
+
+export const metadata = {
+  title: 'Browse Listings | ValorHomes',
+  description: 'Find your next home with a VA loan assumption. Browse active listings with low interest rates.',
+}
+
+function ListingsSkeleton() {
+  return (
+    <>
+      {[1, 2, 3].map((i) => (
+        <li key={i} className="relative py-5 px-5">
+          <div className="flex items-top gap-x-4">
+            <div className="flex-shrink-0 w-[300px] h-[300px] bg-gray-200 dark:bg-gray-700 rounded-lg animate-pulse" />
+            <div className="flex min-w-0 flex-1 items-start justify-between gap-x-6">
+              <div className="min-w-0 flex-1 space-y-3">
+                <div className="h-5 bg-gray-200 dark:bg-gray-700 rounded w-3/4 animate-pulse" />
+                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2 animate-pulse" />
+              </div>
+            </div>
+          </div>
+        </li>
+      ))}
+    </>
+  )
+}
 
 export default function ListingsPage() {
   return (
@@ -55,10 +81,12 @@ export default function ListingsPage() {
         </div>
 
         <ul role="list" className="divide-y divide-gray-100 dark:divide-white/5 mt-6">
-          <ListingsList />
+          <Suspense fallback={<ListingsSkeleton />}>
+            <ListingsList />
+          </Suspense>
         </ul>
 
       </div>
-    </main >
-  );
+    </main>
+  )
 }
